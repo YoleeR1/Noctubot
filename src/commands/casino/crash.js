@@ -13,9 +13,9 @@ module.exports = async (client, interaction, args) => {
         // Random number between 0 and 1
         const rand = Math.random();
         
-        // Increased early crash chance (35% chance to crash before 2x)
-        if (rand < 0.35) {
-            return Math.random() * 1.8 + 1; // Crash between 1x and 1.8x
+        // Increased early crash chance (90% chance to crash before 1.85x)
+        if (rand < 0.90) {
+            return Math.random() * 1.85 + 1; // Crash between 1x and 1.85x
         }
         
         // Normal distribution with exponential falloff for higher values
