@@ -9,8 +9,8 @@ module.exports = {
         id: process.env.DISCORD_ID,
         prefix: '!',
         footer: `© Nocturnals ${new Date().getFullYear()}`, 
-        botInvite: `https://discord.com/oauth2/authorize?client_id=1292889028907110421`,
-        serverInvite: "https://discord.gg/nocturnals-1216769907744571473",
+        botInvite: `https://discord.com/oauth2/authorize?client_id=1292889028907110421&permissions=8&integration_type=0&scope=bot+applications.commands`,
+        serverInvite: "https://babyboos.eu",
     },
 
     wordList: `Airplane
