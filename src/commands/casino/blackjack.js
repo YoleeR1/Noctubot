@@ -7,9 +7,22 @@ module.exports = async (client, interaction, args) => {
 
     Schema.findOne({ Guild: interaction.guild.id, User: user.id }, async (err, data) => {
         if (data) {
-            let money = parseInt(interaction.options.getNumber('amount'));
+            // Updated line to get string and parse it properly
+            let amountString = interaction.options.getString('amount');
+            let money;
+            
+            // Parse the amount string with K, M, B suffixes
+            if (amountString.endsWith('K') || amountString.endsWith('k')) {
+                money = parseFloat(amountString.slice(0, -1)) * 1000;
+            } else if (amountString.endsWith('M') || amountString.endsWith('m')) {
+                money = parseFloat(amountString.slice(0, -1)) * 1000000;
+            } else if (amountString.endsWith('B') || amountString.endsWith('b')) {
+                money = parseFloat(amountString.slice(0, -1)) * 1000000000;
+            } else {
+                money = parseInt(amountString);
+            }
 
-            if (!money) return client.errUsage({ usage: "blackjack [amount]", type: 'editreply' }, interaction);
+            if (!money || isNaN(money)) return client.errUsage({ usage: "blackjack [amount]", type: 'editreply' }, interaction);
             if (money > data.Money) return client.errNormal({ error: `You are betting more than you have!`, type: 'editreply' }, interaction);
 
             var numCardsPulled = 0;
