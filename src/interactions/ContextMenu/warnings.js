@@ -29,10 +29,23 @@ module.exports = {
         }
         await interaction.deferReply({ ephemeral: false });
 
-        const member = interaction.guild.members.cache.get(interaction.targetId);
+        const member = interaction.guild.members.cache.get(interaction.targetId) || await interaction.guild.members.fetch(interaction.targetId).catch(() => null);
+
+        if (!member) {
+            client.errNormal({
+                error: "User not found in the guild!",
+                type: 'ephemeral'
+            }, interaction);
+            return;
+        }
 
         Schema.findOne({ Guild: interaction.guild.id, User: member.id }, async (err, data) => {
             if (data) {
+                const currentTime = Date.now();
+                const warningExpiryTime = 90 * 24 * 60 * 60 * 1000; // 90 days
+                data.Warnings = data.Warnings.filter(warning => (currentTime - warning.Date) <= warningExpiryTime);
+                data.save();
+
                 var fields = [];
                 data.Warnings.forEach(element => {
                     fields.push({
@@ -65,4 +78,3 @@ module.exports = {
     },
 };
 
- 

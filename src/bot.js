@@ -1,5 +1,6 @@
 const Discord = require('discord.js');
 const fs = require('fs');
+const path = require('path');
 
 // Discord client
 const client = new Discord.Client({
@@ -73,14 +74,17 @@ const warnLogs = new Discord.WebhookClient({
 });
 
 // Load handlers
-fs.readdirSync('./src/handlers').forEach((dir) => {
-    fs.readdirSync(`./src/handlers/${dir}`).forEach((handler) => {
-        // Skip any music/audio-related handlers
-        if (handler === 'soundboard.js' || handler.includes('music') || handler.includes('audio') || handler.includes('lavalink')) {
-            console.log(`Skipping music-related handler: ${handler}`);
-            return;
+const handlersDir = path.join(__dirname, 'handlers');
+fs.readdirSync(handlersDir).forEach(dir => {
+    const handlers = fs.readdirSync(path.join(handlersDir, dir)).filter(file => file.endsWith('.js'));
+    handlers.forEach(handler => {
+        const handlerPath = path.join(handlersDir, dir, handler);
+        const handlerFunction = require(handlerPath);
+        if (typeof handlerFunction === 'function') {
+            handlerFunction(client);
+        } else {
+            console.error(`Handler ${handlerPath} does not export a function`);
         }
-        require(`./handlers/${dir}/${handler}`)(client);
     });
 });
 

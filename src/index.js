@@ -6,6 +6,8 @@ const webhook = require("./config/webhooks.json");
 const config = require("./config/bot.js");
 const webHooksArray = ['startLogs', 'shardLogs', 'errorLogs', 'dmLogs', 'voiceLogs', 'serverLogs', 'serverLogs2', 'commandLogs', 'consoleLogs', 'warnLogs', 'voiceErrorLogs', 'creditLogs', 'evalLogs', 'interactionLogs'];
 
+const cleanupWarnings = require('./handlers/functions/cleanupWarnings');
+
 // Check if .env webhook_id and webhook_token are set
 if (process.env.WEBHOOK_ID && process.env.WEBHOOK_TOKEN) {
     for (const webhookName of webHooksArray) {
@@ -184,4 +186,20 @@ process.on('warning', warn => {
         console.log('Error sending warning to webhook')
         console.log(warn)
     })
+});
+
+// Initialize the client
+const client = new Discord.Client({
+    intents: [
+        Discord.GatewayIntentBits.Guilds,
+        Discord.GatewayIntentBits.GuildMessages,
+        Discord.GatewayIntentBits.MessageContent,
+        Discord.GatewayIntentBits.GuildMembers,
+        Discord.GatewayIntentBits.GuildMessageReactions,
+        Discord.GatewayIntentBits.GuildVoiceStates,
+    ],
+});
+
+client.once('ready', () => {
+    cleanupWarnings(client);
 });

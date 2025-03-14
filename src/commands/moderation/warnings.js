@@ -17,11 +17,24 @@ module.exports = async (client, interaction, args) => {
     }
 
     const member = interaction.options.getUser('user');
-    const warningExpiryDays = 90; // 3 months (90 days)
+    const targetMember = await interaction.guild.members.fetch(member.id).catch(() => null);
+
+    if (!targetMember) {
+        client.errNormal({
+            error: "User not found in the guild!",
+            type: 'editreply'
+        }, interaction);
+        return;
+    }
+
+    const warningExpiryDays = 90; // 90 days
     const currentTime = Date.now();
 
     Schema.findOne({ Guild: interaction.guild.id, User: member.id }, async (err, data) => {
         if (data && data.Warnings.length > 0) {
+            data.Warnings = data.Warnings.filter(warning => (currentTime - warning.Date) <= (warningExpiryDays * 24 * 60 * 60 * 1000));
+            data.save();
+
             var fields = [];
             var validWarningsCount = 0;
 

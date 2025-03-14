@@ -15,7 +15,7 @@ module.exports = async (client, interaction, args) => {
     const SPECIAL_ACCESS_ROLE_ID = modRolesData?.SpecialAccessRole || '';
     const WARNINGS_CHANNEL_ID = warningSettingsData?.WarningsChannel || '';
     const maxWarnings = warningSettingsData?.MaxWarnings || 3;
-    const warningExpiryDays = warningSettingsData?.WarningExpiryDays || 90;
+    const warningExpiryDays = 90; // 90 days
 
     const isRegularMod = interaction.memberPermissions.has(Discord.PermissionsBitField.Flags.ManageMessages);
     const hasSpecialRole = interaction.member.roles.cache.has(SPECIAL_ACCESS_ROLE_ID);
