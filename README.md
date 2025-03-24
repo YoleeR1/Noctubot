@@ -58,11 +58,6 @@ NoctuBot comes packed with a wide range of features organized into various categ
 ### 🔊 Personal Voice Channels
 - **Dynamic Voice Channels**: Automatically create a personal voice channel when you join a designated lobby.
 - **Full Control**: Manage your channel with easy-to-use `/vc` commands:
-  - `/vc lock`: Lock your channel to prevent others from joining.
-  - `/vc unlock`: Unlock your channel to allow others to join.
-  - `/vc whitelist <user>`: Allow specific users to join your locked channel.
-  - `/vc blacklist <user>`: Block specific users from joining your channel.
-  - `/vc reset`: Reset all permissions on your channel to default.
 - **Auto-Delete**: Channels are automatically deleted when empty.
 
 ## 📋 Prerequisites
