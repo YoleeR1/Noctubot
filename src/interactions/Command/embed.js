@@ -22,15 +22,16 @@ module.exports = {
 
   run: async (client, interaction, args) => {
     await interaction.deferReply({ fetchReply: true });
-    const perms = await client.checkPerms(
-      {
-        flags: [Discord.PermissionsBitField.Flags.ManageMessages],
-        perms: [Discord.PermissionsBitField.Flags.ManageMessages],
-      },
-      interaction
-    );
-
-    if (perms == false) return;
+    
+    if (!interaction.member.permissions.has(Discord.PermissionsBitField.Flags.ManageMessages)) {
+      return client.errMissingPerms(
+        {
+          perms: "Manage Messages",
+          type: "editreply"
+        },
+        interaction
+      );
+    }
 
     let row = new Discord.ActionRowBuilder().addComponents(
       new Discord.StringSelectMenuBuilder()
@@ -368,4 +369,4 @@ module.exports = {
   },
 };
 
- 
+
