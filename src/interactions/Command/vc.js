@@ -1,91 +1,85 @@
-const { CommandInteraction, Client } = require('discord.js');
 const { SlashCommandBuilder } = require('discord.js');
-const Discord = require('discord.js');
-const path = require('path');
+const VoiceChannel = require('../../database/models/VoiceChannel');
 
 module.exports = {
     data: new SlashCommandBuilder()
         .setName('vc')
         .setDescription('Voice Channel Management')
-        .addSubcommand(subcommand => 
+        .addSubcommand(subcommand =>
             subcommand
-                .setName('publicvc')
-                .setDescription('Make your voice channel public')
+                .setName('lock')
+                .setDescription('Lock your personal voice channel')
         )
-        .addSubcommand(subcommand => 
+        .addSubcommand(subcommand =>
             subcommand
-                .setName('privatevc')
-                .setDescription('Make your voice channel private')
+                .setName('unlock')
+                .setDescription('Unlock your personal voice channel')
         )
-        .addSubcommand(subcommand => 
+        .addSubcommand(subcommand =>
             subcommand
-                .setName('permissiongrant')
-                .setDescription('Grant a user access to your voice channel')
-                .addUserOption(option => 
+                .setName('whitelist')
+                .setDescription('Whitelist a user to join your personal voice channel')
+                .addUserOption(option =>
                     option
                         .setName('user')
-                        .setDescription('User to grant access')
+                        .setDescription('User to whitelist')
                         .setRequired(true)
                 )
         )
-        .addSubcommand(subcommand => 
+        .addSubcommand(subcommand =>
             subcommand
-                .setName('permissionrevoke')
-                .setDescription('Revoke a user\'s access to your voice channel')
-                .addUserOption(option => 
+                .setName('blacklist')
+                .setDescription('Blacklist a user from joining your personal voice channel')
+                .addUserOption(option =>
                     option
                         .setName('user')
-                        .setDescription('User to revoke access')
+                        .setDescription('User to blacklist')
+                        .setRequired(true)
+                )
+        )
+        .addSubcommand(subcommand =>
+            subcommand
+                .setName('reset')
+                .setDescription('Reset a user\'s permissions in your personal voice channel')
+                .addUserOption(option =>
+                    option
+                        .setName('user')
+                        .setDescription('User to reset permissions for')
                         .setRequired(true)
                 )
         ),
 
-    run: async (client, interaction, args) => {
+    run: async (client, interaction) => {
+        await interaction.deferReply({ ephemeral: true });
+
+        const subcommand = interaction.options.getSubcommand();
+        const userId = interaction.user.id;
+        const guildId = interaction.guild.id;
+
+        // Fetch the user's voice channel from the database
+        const voiceChannelData = await VoiceChannel.findOne({ guildId, ownerId: userId });
+        if (!voiceChannelData) {
+            return interaction.editReply({
+                content: 'You do not own a personal voice channel.',
+            });
+        }
+
+        const channel = interaction.guild.channels.cache.get(voiceChannelData.channelId);
+        if (!channel) {
+            await VoiceChannel.deleteOne({ guildId, ownerId: userId });
+            return interaction.editReply({
+                content: 'Your personal voice channel no longer exists.',
+            });
+        }
+
         try {
-            await interaction.deferReply({ fetchReply: true });
-
-            const subcommand = interaction.options.getSubcommand();
-
-            // Dynamic command handling
-            switch(subcommand) {
-                case 'publicvc':
-                case 'privatevc':
-                case 'permissiongrant':
-                case 'permissionrevoke': {
-                    try {
-                        const vcCommand = require(path.join(__dirname, '..', '..', 'commands', 'VoiceChannel', 'vc.js'));
-                        await vcCommand.execute(interaction);
-                    } catch (vcError) {
-                        console.error('VC command error:', vcError);
-                        await interaction.editReply({
-                            content: 'Failed to execute voice channel command. Please contact support.',
-                            ephemeral: true
-                        });
-                    }
-                    break;
-                }
-                default: {
-                    try {
-                        await client.loadSubcommands(client, interaction, args);
-                    } catch (loadError) {
-                        console.error('Subcommand load error:', loadError);
-                        await interaction.editReply({
-                            content: 'An error occurred while processing the command.',
-                            ephemeral: true
-                        });
-                    }
-                }
-            }
+            const command = require(`../../commands/VoiceChannel/${subcommand}`);
+            await command(interaction, channel);
         } catch (error) {
-            console.error('Voice Channel command error:', error);
-            try {
-                await interaction.editReply({
-                    content: 'An unexpected error occurred.',
-                    ephemeral: true
-                });
-            } catch (replyError) {
-                console.error('Error replying to interaction:', replyError);
-            }
+            console.error(`Error executing VC subcommand '${subcommand}':`, error);
+            await interaction.editReply({
+                content: 'An error occurred while processing your request.',
+            });
         }
     },
 };

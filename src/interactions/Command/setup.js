@@ -2,6 +2,7 @@ const { CommandInteraction, Client } = require('discord.js');
 const { SlashCommandBuilder } = require('discord.js');
 const { ChannelType } = require('discord.js');
 const Discord = require('discord.js');
+const GuildConfig = require('../../database/models/GuildConfig');
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -163,6 +164,12 @@ module.exports = {
                         )
                 )
         )
+        .addSubcommand(subcommand =>
+            subcommand
+                .setName('jointocreatevc')
+                .setDescription('Set up the join-to-create voice channel.')
+                .addChannelOption(option => option.setName('channel').setDescription('The voice channel to use for join-to-create.').setRequired(true).addChannelTypes(ChannelType.GuildVoice))
+        )
     ,
 
     /** 
@@ -172,16 +179,36 @@ module.exports = {
      */
 
     run: async (client, interaction, args) => {
-        await interaction.deferReply({ fetchReply: true });
+        await interaction.deferReply({ ephemeral: true }); // Ensure proper usage of deferReply
         const perms = await client.checkUserPerms({
             flags: [Discord.PermissionsBitField.Flags.Administrator],
             perms: [Discord.PermissionsBitField.Flags.Administrator]
-        }, interaction)
+        }, interaction);
 
         if (perms == false) return;
+
+        // Ensure the jointocreatevc subcommand is handled
+        if (interaction.options.getSubcommand() === 'jointocreatevc') {
+            const channel = interaction.options.getChannel('channel');
+            if (channel.type !== ChannelType.GuildVoice) {
+                return interaction.editReply({
+                    content: 'Please select a valid voice channel.',
+                });
+            }
+
+            // Save the join-to-create channel ID in the database
+            await GuildConfig.findOneAndUpdate(
+                { guildId: interaction.guild.id },
+                { joinToCreateChannelId: channel.id },
+                { upsert: true }
+            );
+
+            return interaction.editReply({
+                content: `Join-to-create voice channel has been set to ${channel.name}.`,
+            });
+        }
 
         client.loadSubcommands(client, interaction, args);
     },
 };
 
- 
