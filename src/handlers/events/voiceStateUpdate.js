@@ -18,12 +18,15 @@ module.exports = async (client, oldState, newState) => {
 
         // Check if the user joined the designated join-to-create channel
         if (newState.channelId === joinToCreateChannelId) {
+            const joinToCreateChannel = newState.guild.channels.cache.get(joinToCreateChannelId);
+
             // Create a new voice channel for the user
             const channelName = `${newState.member.user.username}'s Channel`;
             const newChannel = await newState.guild.channels.create({
                 name: channelName,
                 type: Discord.ChannelType.GuildVoice,
-                parent: newState.channel?.parentId, // Use the same category as the join-to-create channel
+                parent: joinToCreateChannel?.parentId, // Use the same category as the join-to-create channel
+                position: joinToCreateChannel?.position + 1, // Place the new channel right below the join-to-create channel
                 permissionOverwrites: [
                     {
                         id: newState.guild.id,
