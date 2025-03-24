@@ -26,7 +26,6 @@ module.exports = async (client, oldState, newState) => {
                 name: channelName,
                 type: Discord.ChannelType.GuildVoice,
                 parent: joinToCreateChannel?.parentId, // Use the same category as the join-to-create channel
-                position: joinToCreateChannel?.position + 1, // Place the new channel right below the join-to-create channel
                 permissionOverwrites: [
                     {
                         id: newState.guild.id,
@@ -38,6 +37,9 @@ module.exports = async (client, oldState, newState) => {
                     },
                 ],
             });
+
+            // Explicitly set the position of the new channel to be one below the join-to-create channel
+            await newChannel.setPosition(joinToCreateChannel.position + 1).catch(console.error);
 
             // Move the user to the new channel
             await newState.member.voice.setChannel(newChannel);
