@@ -160,3 +160,8 @@ client.on(Discord.ShardEvents.Error, error => {
         embeds: [embed],
     });
 });
+
+client.on('voiceStateUpdate', async (oldState, newState) => {
+    const event = require('./handlers/events/voiceStateUpdate');
+    await event(client, oldState, newState);
+});
