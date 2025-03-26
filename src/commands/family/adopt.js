@@ -1,37 +1,38 @@
 const Discord = require('discord.js');
-
 const Schema = require("../../database/models/family");
 
 module.exports = async (client, interaction, args) => {
-
     const target = interaction.options.getUser('user');
     const author = interaction.user;
 
-    if (author.id == target.id) return client.errNormal({
-        error: "You cannot adopt yourself",
+    if (author.id === target.id) return client.errNormal({
+        error: "You cannot adopt yourself.",
         type: 'editreply'
     }, interaction);
 
     if (target.bot) return client.errNormal({
-        error: "You cannot adopt a bot",
+        error: "You cannot adopt a bot.",
         type: 'editreply'
     }, interaction);
 
-    const familyMember = await Schema.findOne({ Guild: interaction.guild.id, User: target.id, Parent: author.id });
-    const familyMember2 = await Schema.findOne({ Guild: interaction.guild.id, User: author.id, Parent: target.id });
-    const familyMember3 = await Schema.findOne({ Guild: interaction.guild.id, User: author.id, Partner: target.id });
+    const authorData = await Schema.findOne({ Guild: interaction.guild.id, User: author.id });
 
-    if (familyMember || familyMember2 || familyMember3) {
+    if (authorData?.Partner === target.id) {
         return client.errNormal({
-            error: `You cannot adopt a family member!`,
+            error: "You cannot adopt your partner.",
             type: 'editreply'
         }, interaction);
     }
 
-    const checkAdopt = await Schema.findOne({ Guild: interaction.guild.id, Children: target.username });
-    if (checkAdopt) {
+    const existingRelationship = await Schema.findOne({
+        Guild: interaction.guild.id,
+        User: target.id,
+        Parent: author.id
+    });
+
+    if (existingRelationship) {
         return client.errNormal({
-            error: `This user has already been adopted`,
+            error: "This user is already part of your family.",
             type: 'editreply'
         }, interaction);
     }
@@ -39,81 +40,78 @@ module.exports = async (client, interaction, args) => {
     const row = new Discord.ActionRowBuilder()
         .addComponents(
             new Discord.ButtonBuilder()
-                .setCustomId('adopt_yes')
-                .setEmoji('✅')
+                .setCustomId('adopt_accept')
+                .setLabel('Accept')
                 .setStyle(Discord.ButtonStyle.Success),
-
             new Discord.ButtonBuilder()
-                .setCustomId('adopt_deny')
-                .setEmoji('❌')
-                .setStyle(Discord.ButtonStyle.Danger),
+                .setCustomId('adopt_decline')
+                .setLabel('Decline')
+                .setStyle(Discord.ButtonStyle.Danger)
         );
 
     client.embed({
-        title: `👪・Adoption`,
-        desc: `${author} has asked to adopt ${target} \n${target}! click on one of the buttons`,
+        title: `👪・Adoption Request`,
+        desc: `${author} wants to adopt you, ${target}. Do you accept?`,
         components: [row],
         content: `${target}`,
         type: 'editreply',
-    }, interaction)
+    }, interaction);
 
     const filter = i => i.user.id === target.id;
+    interaction.channel.awaitMessageComponent({ filter, componentType: Discord.ComponentType.Button, time: 60000 })
+        .then(async i => {
+            if (i.customId === 'adopt_accept') {
+                const authorData = await Schema.findOneAndUpdate(
+                    { Guild: interaction.guild.id, User: author.id },
+                    { $addToSet: { Children: target.id } },
+                    { upsert: true, new: true }
+                );
 
-    interaction.channel.awaitMessageComponent({ filter, componentType: Discord.ComponentType.Button, time: 60000 }).then(async i => {
-        if (i.customId == "adopt_yes") {
+                if (authorData.Partner) {
+                    // Add the child as a "Step Child" for the partner
+                    await Schema.findOneAndUpdate(
+                        { Guild: interaction.guild.id, User: authorData.Partner },
+                        { $addToSet: { SharedChildren: target.id } },
+                        { upsert: true }
+                    );
 
-            Schema.findOne({ Guild: interaction.guild.id, User: author.id }, async (err, data) => {
-                if (data) {
-                    data.Children.push(target.username);
-                    data.save();
+                    // Add the partner as a "Step Parent" for the child
+                    await Schema.findOneAndUpdate(
+                        { Guild: interaction.guild.id, User: target.id },
+                        { $addToSet: { Parent: authorData.Partner } },
+                        { upsert: true }
+                    );
                 }
-                else {
-                    new Schema({
-                        Guild: interaction.guild.id,
-                        User: author.id,
-                        Children: target.username
-                    }).save();
-                }
-            })
 
-            Schema.findOne({ Guild: interaction.guild.id, User: target.id }, async (err, data) => {
-                if (data) {
-                    data.Parent.push(author.username);
-                    data.save();
-                }
-                else {
-                    new Schema({
-                        Guild: interaction.guild.id,
-                        User: target.id,
-                        Parent: author.username
-                    }).save();
-                }
-            })
+                await Schema.findOneAndUpdate(
+                    { Guild: interaction.guild.id, User: target.id },
+                    { $addToSet: { Parent: author.id } },
+                    { upsert: true }
+                );
 
+                client.embed({
+                    title: `👪・Adoption Successful`,
+                    desc: `${author} has adopted ${target}.`,
+                    components: [],
+                    type: 'editreply'
+                }, interaction);
+            } else if (i.customId === 'adopt_decline') {
+                client.embed({
+                    title: `👪・Adoption Declined`,
+                    desc: `${target} has declined the adoption request from ${author}.`,
+                    components: [],
+                    type: 'editreply'
+                }, interaction);
+            }
+        })
+        .catch(() => {
             client.embed({
-                title: `👪・Adoption - Approved`,
-                desc: `${author} is now the proud parent of ${target}! 🎉`,
+                title: `👪・Adoption Timed Out`,
+                desc: `${target} did not respond to the adoption request.`,
                 components: [],
                 type: 'editreply'
             }, interaction);
-        }
+        });
+};
 
-        if (i.customId == "adopt_deny") {
-            client.embed({
-                title: `👪・Adoption - Denied`,
-                desc: `${target} does not want to be adopted by ${author}`,
-                components: [],
-                type: 'editreply'
-            }, interaction);
-        }
-    }).catch(() => {
-        client.embed({
-            title: `👪・Adoption - Denied`,
-            desc: `${target} has not answered anything! The adoption is cancelled`,
-            components: [],
-            type: 'editreply'
-        }, interaction);
-    });
-}
 
- 
