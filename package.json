@@ -1,6 +1,6 @@
 {
   "name": "NoctuBot",
-  "version": "10.0.0",
+  "version": "3.1",
   "description": "The offical Nocturnals All in one Discord Bot",
   "main": "./src/index.js",
   "scripts": {
