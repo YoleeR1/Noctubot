@@ -1,11 +1,34 @@
 const { CommandInteraction, Client } = require('discord.js');
 const { SlashCommandBuilder } = require('discord.js');
-const Discord = require('discord.js');
 
 module.exports = {
     data: new SlashCommandBuilder()
         .setName('family')
-        .setDescription('Create a family in Bot')
+        .setDescription('Manage your family relationships')
+        .addSubcommand(subcommand =>
+            subcommand
+                .setName('adopt')
+                .setDescription('Adopt a user as your child')
+                .addUserOption(option => option.setName('user').setDescription('Select a user').setRequired(true))
+        )
+        .addSubcommand(subcommand =>
+            subcommand
+                .setName('disown')
+                .setDescription('Disown one of your children')
+                .addUserOption(option => option.setName('user').setDescription('Select a user').setRequired(true))
+        )
+        .addSubcommand(subcommand =>
+            subcommand
+                .setName('family')
+                .setDescription('View someone\'s family relationships')
+                .addUserOption(option => option.setName('user').setDescription('Select a user').setRequired(false))
+        )
+        .addSubcommand(subcommand =>
+            subcommand
+                .setName('propose')
+                .setDescription('Propose marriage to a user')
+                .addUserOption(option => option.setName('user').setDescription('Select a user').setRequired(true))
+        )
         .addSubcommand(subcommand =>
             subcommand
                 .setName('help')
@@ -13,45 +36,15 @@ module.exports = {
         )
         .addSubcommand(subcommand =>
             subcommand
-                .setName('adopt')
-                .setDescription('Adopt a member')
-                .addUserOption(option => option.setName('user').setDescription('Select a user').setRequired(true))
-        )
-        .addSubcommand(subcommand =>
-            subcommand
                 .setName('delete')
-                .setDescription('Delete your family!'),
-        )
-        .addSubcommand(subcommand =>
-            subcommand
-                .setName('disown')
-                .setDescription('Disown one of your children or a parent')
-                .addUserOption(option => option.setName('user').setDescription('Select a user').setRequired(true)),
+                .setDescription('Delete your entire family')
         )
         .addSubcommand(subcommand =>
             subcommand
                 .setName('divorce')
                 .setDescription('Divorce your partner')
-                .addUserOption(option => option.setName('user').setDescription('Select a user').setRequired(true)),
-        )
-        .addSubcommand(subcommand =>
-            subcommand
-                .setName('family')
-                .setDescription(`See who's in someone's family!`)
-                .addUserOption(option => option.setName('user').setDescription('Select a user').setRequired(false)),
-        )
-        .addSubcommand(subcommand =>
-            subcommand
-                .setName('propose')
-                .setDescription('Marry a member')
-                .addUserOption(option => option.setName('user').setDescription('Select a user').setRequired(true)),
+                .addUserOption(option => option.setName('user').setDescription('Select a user').setRequired(true))
         ),
-
-    /** 
-     * @param {Client} client
-     * @param {CommandInteraction} interaction
-     * @param {String[]} args
-     */
 
     run: async (client, interaction, args) => {
         await interaction.deferReply({ fetchReply: true });
@@ -59,4 +52,3 @@ module.exports = {
     },
 };
 
- 
