@@ -8,6 +8,12 @@
 
 Welcome to NoctuBot's GitHub repository! NoctuBot is a powerful, feature-rich Discord bot originally designed for the Nocturnals community. With extensive moderation tools, a robust economy system, fun games, and much more, NoctuBot aims to enhance your Discord server experience.
 
+Noctubot is a modified version of [Dbot](https://github.com/DotwoodMedia/Dbot) indended for private use by [Nocturnals Discord server](https://babyboos.eu/discord) and is now made public for use. [Dbot](https://github.com/DotwoodMedia/Dbot) was originally created by [Dotwood Media](https://github.com/DotwoodMedia) and [Graphix Development](https://github.com/GraphixDevelopment). This version has been modified and updated by me (Tony Ghobrial aka YoleeR) 
+
+All use, modification, or distribution of this software is governed by a combination of licensing terms. Portions originally developed by Dotwood Media and Graphix Development are released under the MIT License, while the modifications and additional code by Tony Ghobrial are subject to the terms in this repository. For the full terms, please see the [License](https://github.com/YoleeR1/Noctubot/blob/main/LICENSE).
+
+
+
 ## 🌟 Features
 
 NoctuBot comes packed with a wide range of features organized into various categories:
