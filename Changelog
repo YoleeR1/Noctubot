@@ -1,4 +1,6 @@
-Version 3.1
-Reworked the entire family system
-Created a changelog file for updates
+Version 3.2
+Removed unused features (search).
+Added status customization to the bot!
+Added the new cutomization options in .env.example
+
 
