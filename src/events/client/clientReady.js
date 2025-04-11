@@ -44,9 +44,29 @@ module.exports = async (client) => {
                         `・🏷️┆Version ${require(`${process.cwd()}/package.json`).version}`
                     ];
                 }
+
                 const randomText = statuttext[Math.floor(Math.random() * statuttext.length)];
-                client.user.setPresence({ activities: [{ name: randomText, type: Discord.ActivityType.Playing }], status: 'online' });
-            })
+                const presenceStatus = process.env.DISCORD_PRESENCE || 'online';
+                let activityType = process.env.DISCORD_ACTIVITY_TYPE || 'Playing'; // Changed to let
+
+                // Validate activity type
+                const validActivityTypes = Object.keys(Discord.ActivityType);
+                if (!validActivityTypes.includes(activityType.charAt(0).toUpperCase() + activityType.slice(1).toLowerCase())) {
+                    console.warn(`Invalid DISCORD_ACTIVITY_TYPE: ${activityType}. Defaulting to 'Playing'.`);
+                    activityType = 'Playing'; // Reassignment is now allowed
+                } else {
+                    activityType = activityType.charAt(0).toUpperCase() + activityType.slice(1).toLowerCase();
+                }
+
+                try {
+                    client.user.setPresence({
+                        activities: [{ name: randomText, type: Discord.ActivityType[activityType] }],
+                        status: presenceStatus, // Can be 'online', 'idle', or 'dnd'
+                    });
+                } catch (err) {
+                    console.error('Failed to update bot presence:', err);
+                }
+            });
     }, 50000)
 
     // Music player initialization removed as music functionality is no longer supported

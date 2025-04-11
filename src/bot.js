@@ -88,6 +88,33 @@ fs.readdirSync(handlersDir).forEach(dir => {
     });
 });
 
+client.once('ready', () => {
+    const statusText = process.env.DISCORD_STATUS || 'Online';
+    const presenceStatus = process.env.DISCORD_PRESENCE || 'online';
+    let activityType = process.env.DISCORD_ACTIVITY_TYPE || 'Playing';
+
+    // Validate activity type
+    const validActivityTypes = Object.keys(Discord.ActivityType);
+    if (!validActivityTypes.includes(activityType.charAt(0).toUpperCase() + activityType.slice(1).toLowerCase())) {
+        console.warn(`Invalid DISCORD_ACTIVITY_TYPE: ${activityType}. Defaulting to 'Playing'.`);
+        activityType = 'Playing';
+    } else {
+        activityType = activityType.charAt(0).toUpperCase() + activityType.slice(1).toLowerCase();
+    }
+
+    try {
+        client.user.setPresence({
+            activities: [{ name: statusText, type: Discord.ActivityType[activityType] }], // Use validated activity type
+            status: presenceStatus, // Can be 'online', 'idle', or 'dnd'
+        });
+
+        // Styled log message for status update
+        console.log('\x1b[34m\x1b[1mBot\x1b[0m \x1b[37m>>\x1b[0m \x1b[32mUpdated Status\x1b[0m');
+    } catch (err) {
+        console.error('Failed to update bot presence:', err);
+    }
+});
+
 client.login(process.env.DISCORD_TOKEN);
 
 process.on('unhandledRejection', error => {
