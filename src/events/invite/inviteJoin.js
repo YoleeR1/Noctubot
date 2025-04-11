@@ -30,21 +30,18 @@ module.exports = async (client, member, invite, inviter) => {
 
             welcomeSchema.findOne({ Guild: member.guild.id }, async (err, channelData) => {
                 if (channelData) {
-
-                    var channel = member.guild.channels.cache.get(channelData.Channel)
-
-                    await client.embed({
-                        title: `👋・Welcome`,
-                        desc: joinMessage
-                    }, channel).catch(() => { })
+                    var channel = member.guild.channels.cache.get(channelData.Channel);
+                    // Parse the stored join message using the new parser.
+                    const embeds = client.parseCustomMessage(joinMessage, { member: member, guild: member.guild, client: client });
+                    // Ping the joining member before sending the embed(s).
+                    await channel.send({ content: `<@${member.id}>` });
+                    await channel.send({ embeds: embeds }).catch(() => {});
                 }
             })
         } else {
             welcomeSchema.findOne({ Guild: member.guild.id }, async (err, channelData) => {
                 if (channelData) {
-
-                    var channel = member.guild.channels.cache.get(channelData.Channel)
-
+                    var channel = member.guild.channels.cache.get(channelData.Channel);
                     client.embed({
                         title: `👋・Welcome`,
                         desc: `I cannot trace how **${member} | ${member.user.tag}** has been joined`
@@ -80,22 +77,19 @@ module.exports = async (client, member, invite, inviter) => {
 
                 welcomeSchema.findOne({ Guild: member.guild.id }, async (err, channelData) => {
                     if (channelData) {
-
-                        var channel = member.guild.channels.cache.get(channelData.Channel)
-
-                        await client.embed({
-                            title: `👋・Welcome`,
-                            desc: joinMessage
-                        }, channel).catch(() => { })
+                        var channel = member.guild.channels.cache.get(channelData.Channel);
+                        // Parse the stored join message using the new parser.
+                        const embeds = client.parseCustomMessage(joinMessage, { member: member, guild: member.guild, client: client });
+                        // Ping the joining member before sending the embed(s).
+                        await channel.send({ content: `<@${member.id}>` });
+                        await channel.send({ embeds: embeds }).catch(() => {});
                     }
                 })
             }
             else {
                 welcomeSchema.findOne({ Guild: member.guild.id }, async (err, channelData) => {
                     if (channelData) {
-
-                        var channel = member.guild.channels.cache.get(channelData.Channel)
-
+                        var channel = member.guild.channels.cache.get(channelData.Channel);
                         client.embed({
                             title: `👋・Welcome`,
                             desc: `**${member} | ${member.user.tag}** was invited by ${inviter.tag} **(${data.Invites} invites)**`
@@ -142,22 +136,19 @@ module.exports = async (client, member, invite, inviter) => {
 
                 welcomeSchema.findOne({ Guild: member.guild.id }, async (err, channelData) => {
                     if (channelData) {
-
-                        var channel = member.guild.channels.cache.get(channelData.Channel)
-
-                        await client.embed({
-                            title: `👋・Welcome`,
-                            desc: joinMessage
-                        }, channel).catch(() => { })
+                        var channel = member.guild.channels.cache.get(channelData.Channel);
+                        // Parse the stored join message using the new parser.
+                        const embeds = client.parseCustomMessage(joinMessage, { member: member, guild: member.guild, client: client });
+                        // Ping the joining member before sending the embed(s).
+                        await channel.send({ content: `<@${member.id}>` });
+                        await channel.send({ embeds: embeds }).catch(() => {});
                     }
                 })
             }
             else {
                 welcomeSchema.findOne({ Guild: member.guild.id }, async (err, channelData) => {
                     if (channelData) {
-
-                        var channel = member.guild.channels.cache.get(channelData.Channel)
-
+                        var channel = member.guild.channels.cache.get(channelData.Channel);
                         await client.embed({
                             title: `👋・Welcome`,
                             desc: `**${member} | ${member.user.tag}** was invited by ${inviter.tag} **(1 invites)**`

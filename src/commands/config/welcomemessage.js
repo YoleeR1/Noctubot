@@ -14,20 +14,20 @@ module.exports = async (client, interaction, args) => {
     if (message.toUpperCase() == "HELP") {
         return client.embed({
             title: `ℹ️・Welcome Message Options`,
-            desc: `Join message options: \n
-            \`{user:username}\` - User's username
-            \`{user:discriminator}\` - User's discriminator
-            \`{user:tag}\` - User's tag
-            \`{user:mention}\` - Mention a user
-            \`{user:avatar}\` - User's avatar URL
-            \`{guild:name}\` - Server name
-            \`{guild:members}\` - Server members count
-            \`{timestamp}\` - Current time (shows in user's timezone)
-            \`\\n\` - New line (use this to create line breaks)
-            \`[image]\` - Add the welcome image`,
-            color: 0xFF69B4,
+            desc: `Join message options: 
+• {user:username} - User's username
+• {user:discriminator} - User's discriminator
+• {user:tag} - User's tag
+• {user:mention} - Mention a user
+• {user:avatar} - User's avatar URL
+• {guild:name} - Server name
+• {guild:members} - Server members count
+• {timestamp} - Current time (in user's timezone)
+• [split] - Split sections into multiple embed parts
+• {color:#HEX} - Override embed color`,
+            color: 0x2F3136,
             type: 'editreply'
-        }, interaction);
+        }, interaction)
     }
 
     if (message.toUpperCase() == "DEFAULT") {
@@ -54,26 +54,15 @@ module.exports = async (client, interaction, args) => {
                 inviteJoin: message
             }).save();
         }
-
-        // Get current Unix timestamp for the preview
-        const timestamp = Math.floor(Date.now() / 1000);
-        
-        // Create preview message
-        const previewMessage = message
-            .replace('{timestamp}', `<t:${timestamp}:F>`)  // Using Discord's timestamp format
-            .replace('{user:username}', 'ExampleUser')
-            .replace('{guild:members}', interaction.guild.memberCount)
-            .replace(/\\n/g, '\n')
-            .replace(/\[image\]/g, '') // Remove image placeholder for preview
-
-        const embed = new Discord.EmbedBuilder()
-            .setColor(0xFF69B4)
-            .setDescription(previewMessage)
-            .setImage('https://user-content.mimu.bot/1229860957136752792-1229925463674322985-image.png');
-
+        // Generate preview using the new parser with the real member.
+        const embeds = client.parseCustomMessage(message, { 
+            member: interaction.member, 
+            guild: interaction.guild, 
+            client: client 
+        });
         await interaction.editReply({
-            content: `<@${interaction.user.id}>`,
-            embeds: [embed]
+            content: `<@${interaction.user.id}> Preview:`,
+            embeds: embeds
         });
     });
 };

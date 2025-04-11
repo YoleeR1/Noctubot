@@ -14,22 +14,23 @@ module.exports = async (client, interaction, args) => {
 
     if (message.toUpperCase() == "HELP") {
         return client.embed({
-            title: `ℹ️・Welcome message options`,
-            desc: `Leave message options: \n
-            \`{user:username}\` - User's username
-            \`{user:discriminator}\` - User's discriminator
-            \`{user:tag}\` - User's tag
-            \`{user:mention}\` - Mention a user
-
-            \`{inviter:username}\` - inviter's username
-            \`{inviter:discriminator}\` - inviter's discriminator
-            \`{inviter:tag}\` - inviter's tag
-            \`{inviter:mention}\` - inviter's mention
-            \`{inviter:invites}\` - inviter's invites
-            \`{inviter:invites:left}\` - inviter's left invites
-            
-            \`{guild:name}\` - Server name
-            \`{guild:members}\` - Server members count`,
+            title: `ℹ️・Leave Message Options`,
+            desc: `Leave message options: 
+• {user:username} - User's username
+• {user:discriminator} - User's discriminator
+• {user:tag} - User's tag
+• {user:mention} - Mention a user
+• {inviter:username} - Inviter's username
+• {inviter:discriminator} - Inviter's discriminator
+• {inviter:tag} - Inviter's tag
+• {inviter:mention} - Inviter's mention
+• {inviter:invites} - Inviter's invites
+• {inviter:invites:left} - Inviter's left invites
+• {guild:name} - Server name
+• {guild:members} - Server members count
+• {timestamp} - Current time
+• [split] - Split sections into multiple embed parts
+• {color:#HEX} - Override embed color`,
             type: 'editreply'
         }, interaction)
     }
@@ -59,20 +60,17 @@ module.exports = async (client, interaction, args) => {
                     inviteLeave: message
                 }).save();
             }
-
-            client.succNormal({
-                text: `The leave message has been set successfully`,
-                fields: [
-                    {
-                        name: `💬┆Message`,
-                        value: `${message}`,
-                        inline: true
-                    },
-                ],
-                type: 'editreply'
-            }, interaction)
+            // Confirm the message was set and show a preview.
+            const embeds = client.parseCustomMessage(message, { 
+                member: interaction.member, // added member for proper token replacements
+                guild: interaction.guild, 
+                client: client 
+            });
+            await interaction.editReply({
+                content: `<@${interaction.user.id}> Preview:`,
+                embeds: embeds
+            });
         })
     }
 }
 
- 

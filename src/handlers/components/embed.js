@@ -15,7 +15,8 @@ module.exports = (client) => {
                 name: client.user.username,
                 iconURL: client.user.avatarURL({ size: 1024 })
             })
-            .setColor(client.config.colors.normal)
+            // Modified default embed color to Discord's default (0x2F3136)
+            .setColor(0x2F3136)
             .setFooter({
                 text: client.config.discord.footer,
                 iconURL: client.user.avatarURL({ size: 1024 })
@@ -316,6 +317,79 @@ module.exports = (client) => {
             }).catch(e => { });
         }
     }
+
+    // Add custom message parsing for welcome/leave messages using explicit tokens.
+    client.parseCustomMessage = function(raw, context) {
+        // Modified default fallback color to Discord's default (0x2F3136)
+        let color = (context && context.client && context.client.config.colors.normal) || 0x2F3136;
+        const colorMatch = raw.match(/\{color:(#[0-9A-Fa-f]{6})\}/);
+        if(colorMatch) {
+            color = colorMatch[1];
+            raw = raw.replace(colorMatch[0], '');
+        }
+        // Flag for user avatar thumbnail
+        let useAvatar = false;
+        if(raw.includes("{user:avatar}")) {
+            useAvatar = true;
+            raw = raw.replace(/{user:avatar}/g, "");
+        }
+        // Replace common placeholders
+        if(context && context.member) {
+            raw = raw.replace(/{user:username}/g, context.member.user.username)
+                     .replace(/{user:tag}/g, context.member.user.tag)
+                     .replace(/{user:mention}/g, `<@${context.member.id}>`);
+        }
+        if(context && context.guild) {
+            raw = raw.replace(/{guild:name}/g, context.guild.name)
+                     .replace(/{guild:members}/g, context.guild.memberCount);
+        }
+        raw = raw.replace(/{timestamp}/g, `<t:${Math.floor(Date.now()/1000)}:F>`);
+        // Replace literal "\n" with actual newline
+        raw = raw.replace(/\\n/g, "\n");
+        // Split into parts using [split] if present.
+        const parts = raw.split("[split]");
+        const embeds = [];
+        parts.forEach(part => {
+            let embed = new Discord.EmbedBuilder().setColor(color);
+            // Extract tokens
+            const authorMatch = part.match(/\{author:([^}]*)\}/i);
+            if(authorMatch) {
+                embed.setAuthor({ name: authorMatch[1].trim() });
+                part = part.replace(authorMatch[0], '');
+            }
+            const imageMatch = part.match(/\{image:([^}]*)\}/i);
+            if(imageMatch) {
+                embed.setImage(imageMatch[1].trim());
+                part = part.replace(imageMatch[0], '');
+            }
+            const footerMatch = part.match(/\{footer:([^}]*)\}/i);
+            if(footerMatch) {
+                embed.setFooter({ text: footerMatch[1].trim() });
+                part = part.replace(footerMatch[0], '');
+            }
+            const fieldsMatch = part.match(/\{fields:([^}]*)\}/i);
+            if(fieldsMatch) {
+                let fieldsRaw = fieldsMatch[1].trim();
+                let fieldsArr = fieldsRaw.split(";").filter(f => f.includes("::")).map(f => {
+                    let [name, value] = f.split("::");
+                    return { name: name.trim(), value: value.trim(), inline: false };
+                });
+                if(fieldsArr.length) embed.addFields(fieldsArr);
+                part = part.replace(fieldsMatch[0], '');
+            }
+            // Whatever remains becomes the description (body).
+            if(part.trim()) {
+                let currentDesc = embed.data.description || "";
+                embed.setDescription(currentDesc + part.trim());
+            }
+            embeds.push(embed);
+        });
+        // If {user:avatar} was found and context.member exists then set thumbnail on first embed.
+        if(useAvatar && context && context.member && context.member.user &&
+           typeof context.member.user.displayAvatarURL === "function" && embeds.length > 0) {
+            embeds[0].setThumbnail(context.member.user.displayAvatarURL({ dynamic: true, size: 1024 }));
+        }
+        return embeds;
+    };
 }
 
- 
