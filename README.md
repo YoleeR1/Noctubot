@@ -81,7 +81,7 @@ This guide works for both Linux (Debian-based) and Windows systems.
 
 1. **Clone the repository**:
    ```bash
-   git clone https://github.com/YoleeR12/Noctubot.git
+   git clone https://github.com/YoleeR1/Noctubot.git
    cd Noctubot
    ```
 
