@@ -1,6 +1,6 @@
 {
   "name": "NoctuBot",
-  "version": "3.1",
+  "version": "3.2",
   "description": "The offical Nocturnals All in one Discord Bot",
   "main": "./src/index.js",
   "scripts": {
@@ -32,7 +32,6 @@
     "axios": "^1.7.9",
     "canvacord": "^5.4.8",
     "canvas": "^2.11.2",
-    "chalk": "^4.1.2",
     "discord-giveaways": "^6.0.1",
     "discord-image-generation": "^1.4.23",
     "discord.js": "^14.8.0",
