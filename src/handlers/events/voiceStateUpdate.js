@@ -30,11 +30,7 @@ module.exports = async (client, oldState, newState) => {
                     {
                         id: newState.guild.id,
                         allow: [Discord.PermissionsBitField.Flags.Connect],
-                    },
-                    {
-                        id: newState.member.id,
-                        allow: [Discord.PermissionsBitField.Flags.ManageChannels],
-                    },
+                    },                    
                 ],
             });
 
