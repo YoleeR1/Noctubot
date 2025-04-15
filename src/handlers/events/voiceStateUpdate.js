@@ -46,8 +46,13 @@ module.exports = async (client, oldState, newState) => {
                 channelId: newChannel.id,
                 ownerId: newState.member.id,
                 locked: false,
-                whitelist: [],
+                whitelist: [newState.member.id], // Automatically whitelist the owner
                 blacklist: [],
+            });
+
+            // Whitelist the owner in the channel permissions
+            await newChannel.permissionOverwrites.edit(newState.member.id, {
+                Connect: true,
             });
         }
 
