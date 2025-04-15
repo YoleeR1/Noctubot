@@ -1,6 +1,14 @@
 module.exports = async (interaction, channel) => {
     try {
         const user = interaction.options.getUser('user');
+
+        // Prevent blacklisting yourself
+        if (user.id === interaction.user.id) {
+            return interaction.editReply({
+                content: 'You cannot blacklist yourself from your own voice channel.',
+            });
+        }
+
         await channel.permissionOverwrites.edit(user.id, {
             Connect: false,
         });
